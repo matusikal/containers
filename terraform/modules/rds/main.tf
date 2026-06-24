@@ -40,6 +40,7 @@ resource "aws_db_instance" "dailylog_db" {
 resource "aws_secretsmanager_secret" "rds_credentials" {
   name        = "dailylog/rds/credentials"
   description = "RDS credentials for dailylog app"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "rds_credentials_val" {
@@ -52,3 +53,4 @@ resource "aws_secretsmanager_secret_version" "rds_credentials_val" {
     port     = aws_db_instance.dailylog_db.port
   })
 }
+
