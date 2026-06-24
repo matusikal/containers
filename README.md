@@ -2,7 +2,7 @@
 
 A private daily journal application built on AWS, demonstrating containerized workloads, relational databases, authentication, and infrastructure as code.
 
-> **Live demo:** [your-cloudfront-url]  
+> **Live demo:** [CONTACT ME FOR LIVE DEMO]  
 > **Portfolio:** [aleksandermatusik.xyz](https://aleksandermatusik.xyz)
 
 ---
@@ -11,7 +11,7 @@ A private daily journal application built on AWS, demonstrating containerized wo
 
 ```mermaid
 flowchart TD
-    User(["👤 User"])
+    User(["User"])
 
     subgraph Frontend["Frontend"]
         CF["CloudFront"]
