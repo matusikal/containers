@@ -34,7 +34,29 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Access Denied: Bypassing API Gateway is prohibited."
+      status_code  = "403"
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "allow_api_gateway_only" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 1
+
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app_tg.arn
+  }
+
+  condition {
+    http_header {
+      http_header_name = "X-Custom-Header"
+      values           = ["dailylog-secret-2024"]
+    }
   }
 }

@@ -57,3 +57,14 @@ module "iam" {
   source         = "./modules/iam"
   rds_secret_arn = module.rds.rds_secret_arn
 }
+
+module "cognito" {
+  source = "./modules/cognito"
+}
+
+module "api" {
+  source       = "./modules/api"
+  alb_dns_name = module.alb.alb_dns_name
+  user_pool_id = module.cognito.user_pool_id
+  user_pool_client_id = module.cognito.user_pool_client_id
+}

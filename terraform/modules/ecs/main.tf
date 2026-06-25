@@ -29,10 +29,6 @@ resource "aws_cloudwatch_log_group" "ecs_log_group" {
 }
 
 
-
-
-
-
 resource "aws_ecs_task_definition" "dailylog_api_task" {
   family                   = "dailylog-api"
   network_mode             = "awsvpc"

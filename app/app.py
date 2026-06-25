@@ -13,7 +13,7 @@ CORS(app)
 # ── Secrets Manager ──────────────────────────────────────────────────────────
 
 def get_db_credentials():
-    client = boto3.client('secretsmanager', region_name='eu-west-1')
+    client = boto3.client('secretsmanager', region_name='eu-central-1')
     secret = client.get_secret_value(SecretId='dailylog/rds/credentials')
     return json.loads(secret['SecretString'])
 
@@ -176,3 +176,4 @@ def delete_entry(user_id, entry_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
