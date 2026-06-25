@@ -60,6 +60,10 @@ module "iam" {
 
 module "cognito" {
   source = "./modules/cognito"
+  callback_urls = [
+    "http://localhost:3000",
+    "https://${module.s3.s3_distribution_domain_name}"
+  ]
 }
 
 module "api" {

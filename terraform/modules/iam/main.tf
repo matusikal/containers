@@ -32,7 +32,7 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Resource = [var.rds_secret_arn]
+        Resource = "*"
       }
     ]
   })
@@ -67,7 +67,7 @@ resource "aws_iam_role_policy" "ecs_task_secrets" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Resource = [var.rds_secret_arn]
+        Resource = "*"
       }
     ]
   })

@@ -28,8 +28,8 @@ resource "aws_cognito_user_pool_client" "dailylog_client" {
   user_pool_id = aws_cognito_user_pool.dailylog_pool.id
 
   generate_secret = false
-  callback_urls = ["http://localhost:3000"]
-  logout_urls   = ["http://localhost:3000"]
+  callback_urls = var.callback_urls
+  logout_urls   = var.callback_urls
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["email", "openid", "profile"]
