@@ -7,3 +7,8 @@ output "raw_alb_url" {
   value       = "http://${module.alb.alb_dns_name}/health"
   description = "should respond 403"
 }
+
+output "site_url" {
+  value = module.s3.s3_distribution_domain_name
+  description = "CloudFront distribution URL for the S3 bucket"
+}

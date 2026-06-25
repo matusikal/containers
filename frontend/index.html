@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    h1 span {
+      color: #6366f1;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-danger  { background: #ef4444; color: #fff; }
+    .btn-ghost   {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .entry-date {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #6366f1;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .entry-description {
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .actions { display: flex; gap: 8px; }
+
+    .form-card {
+      background: #1e2330;
+      border: 1px solid #6366f1;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .form-card h2 {
+      margin-bottom: 16px;
+      font-size: 1rem;
+      color: #a5b4fc;
+    }
+
+    input, textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #6366f1;
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+
+    .auth-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .auth-screen h1 { font-size: 2.5rem; margin-bottom: 8px; }
+    .auth-screen p  { color: #64748b; margin-bottom: 24px; }
+
+    .empty {
+      text-align: center;
+      color: #475569;
+      padding: 60px 0;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #22c55e;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; }
+    .toast.error { background: #ef4444; }
+
+    #logout-btn { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="auth-screen" class="auth-screen">
+  <div>
+    <h1>Daily <span>Log</span></h1>
+    <p>Your private daily journal, powered by AWS.</p>
+    <button class="btn-primary" onclick="login()">Sign In / Register</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="container">
+    <header>
+      <h1>Daily <span>Log</span></h1>
+      <button id="logout-btn" class="btn-ghost" onclick="logout()">Sign Out</button>
+    </header>
+
+    <div class="form-card">
+      <h2>New Entry</h2>
+      <input type="date" id="entry-date" />
+      <textarea id="entry-description" placeholder="What did you do today?"></textarea>
+      <button class="btn-primary" onclick="createEntry()">Save Entry</button>
+    </div>
+
+    <div id="entries-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Config ────────────────────────────────────────────────────────────────
+  const CONFIG = {
+    cognitoDomain:  'https://dailylog-auth.auth.eu-west-1.amazoncognito.com',
+    clientId:       'YOUR_APP_CLIENT_ID',
+    redirectUri:    window.location.origin,
+    apiUrl:         'YOUR_API_GATEWAY_URL'
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function login() {
+    const url = `${CONFIG.cognitoDomain}/login?` +
+      `client_id=${CONFIG.clientId}` +
+      `&response_type=code` +
+      `&scope=email+openid+profile` +
+      `&redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`
+    window.location.href = url
+  }
+
+  function logout() {
+    localStorage.removeItem('access_token')
+    const url = `${CONFIG.cognitoDomain}/logout?` +
+      `client_id=${CONFIG.clientId}` +
+      `&logout_uri=${encodeURIComponent(CONFIG.redirectUri)}`
+    window.location.href = url
+  }
+
+  async function exchangeCodeForToken(code) {
+    const resp = await fetch(`${CONFIG.cognitoDomain}/oauth2/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type:   'authorization_code',
+        client_id:    CONFIG.clientId,
+        code:         code,
+        redirect_uri: CONFIG.redirectUri
+      })
+    })
+    const data = await resp.json()
+    if (data.access_token) {
+      localStorage.setItem('access_token', data.access_token)
+      window.history.replaceState({}, '', '/')
+      return true
+    }
+    return false
+  }
+
+  function getToken() {
+    return localStorage.getItem('access_token')
+  }
+
+  // ── API calls ─────────────────────────────────────────────────────────────
+  async function apiFetch(path, options = {}) {
+    const token = getToken()
+    const resp = await fetch(`${CONFIG.apiUrl}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers
+      }
+    })
+    if (resp.status === 401) {
+      localStorage.removeItem('access_token')
+      showAuth()
+      return null
+    }
+    return resp
+  }
+
+  // ── Entries ───────────────────────────────────────────────────────────────
+  async function loadEntries() {
+    const resp = await apiFetch('/entries')
+    if (!resp) return
+    const entries = await resp.json()
+    renderEntries(entries)
+  }
+
+  async function createEntry() {
+    const date = document.getElementById('entry-date').value
+    const description = document.getElementById('entry-description').value.trim()
+
+    if (!date || !description) {
+      showToast('Please fill in both fields', true)
+      return
+    }
+
+    const resp = await apiFetch('/entries', {
+      method: 'POST',
+      body: JSON.stringify({ date, description })
+    })
+
+    if (resp && resp.ok) {
+      document.getElementById('entry-date').value = ''
+      document.getElementById('entry-description').value = ''
+      showToast('Entry saved!')
+      loadEntries()
+    }
+  }
+
+  async function deleteEntry(id) {
+    if (!confirm('Delete this entry?')) return
+    const resp = await apiFetch(`/entries/${id}`, { method: 'DELETE' })
+    if (resp && resp.ok) {
+      showToast('Entry deleted')
+      loadEntries()
+    }
+  }
+
+  async function editEntry(id, currentDescription) {
+    const newDescription = prompt('Edit entry:', currentDescription)
+    if (!newDescription || newDescription === currentDescription) return
+
+    const resp = await apiFetch(`/entries/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ description: newDescription })
+    })
+    if (resp && resp.ok) {
+      showToast('Entry updated!')
+      loadEntries()
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function renderEntries(entries) {
+    const list = document.getElementById('entries-list')
+
+    if (entries.length === 0) {
+      list.innerHTML = `<div class="empty">No entries yet. Add your first one above.</div>`
+      return
+    }
+
+    list.innerHTML = entries.map(e => `
+      <div class="card">
+        <div class="card-header">
+          <span class="entry-date">${formatDate(e.date)}</span>
+          <div class="actions">
+            <button class="btn-ghost" onclick="editEntry(${e.id}, ${JSON.stringify(e.description)})">Edit</button>
+            <button class="btn-danger" onclick="deleteEntry(${e.id})">Delete</button>
+          </div>
+        </div>
+        <p class="entry-description">${escapeHtml(e.description)}</p>
+      </div>
+    `).join('')
+  }
+
+  function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      weekday: 'long', year: 'numeric',
+      month: 'long', day: 'numeric'
+    })
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.className = 'toast show' + (isError ? ' error' : '')
+    setTimeout(() => t.className = 'toast', 3000)
+  }
+
+  // ── Screen switching ──────────────────────────────────────────────────────
+  function showApp() {
+    document.getElementById('auth-screen').style.display = 'none'
+    document.getElementById('app').style.display = 'block'
+    document.getElementById('logout-btn').style.display = 'block'
+    document.getElementById('entry-date').value =
+      new Date().toISOString().split('T')[0]
+    loadEntries()
+  }
+
+  function showAuth() {
+    document.getElementById('auth-screen').style.display = 'flex'
+    document.getElementById('app').style.display = 'none'
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+
+    if (code) {
+      const ok = await exchangeCodeForToken(code)
+      if (ok) { showApp(); return }
+    }
+
+    if (getToken()) {
+      showApp()
+    } else {
+      showAuth()
+    }
+  }
+
+  init()
+</script>
+</body>
+</html>

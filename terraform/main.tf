@@ -68,3 +68,11 @@ module "api" {
   user_pool_id = module.cognito.user_pool_id
   user_pool_client_id = module.cognito.user_pool_client_id
 }
+
+module "s3" {
+  source = "./modules/s3"
+  bucket_name          = "docker-portfolio-bucket-the-third"
+  acm_certificate_arn  = "arn:aws:acm:us-east-1:064318812275:certificate/12a0b8b7-2efc-4c22-a251-9808b3ea6464"
+  #domain_aliases        = ["project3.aleksanedermatusik.xyz"]
+  environment           = "Dev"
+}
