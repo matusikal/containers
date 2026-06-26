@@ -193,9 +193,9 @@
   // ── Config ────────────────────────────────────────────────────────────────
   const CONFIG = {
     cognitoDomain:  'https://dailylog-auth-matusikal.auth.eu-central-1.amazoncognito.com',
-    clientId:       '35gqej3q7iu2mvjka4plf3tc3i',
+    clientId:       '4nrpopk2c0v26ahk4uegd732er',
     redirectUri:    window.location.origin,
-    apiUrl:         'https://xd5j7v5991.execute-api.eu-central-1.amazonaws.com'
+    apiUrl:         'https://cqo9rkhqf8.execute-api.eu-central-1.amazonaws.com'
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -298,19 +298,6 @@
     }
   }
 
-  async function editEntry(id, currentDescription) {
-    const newDescription = prompt('Edit entry:', currentDescription)
-    if (!newDescription || newDescription === currentDescription) return
-
-    const resp = await apiFetch(`/entries/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ description: newDescription })
-    })
-    if (resp && resp.ok) {
-      showToast('Entry updated!')
-      loadEntries()
-    }
-  }
 
   // ── Render ────────────────────────────────────────────────────────────────
   function renderEntries(entries) {
@@ -326,7 +313,6 @@
         <div class="card-header">
           <span class="entry-date">${formatDate(e.date)}</span>
           <div class="actions">
-            <button class="btn-ghost" onclick="editEntry(${e.id}, ${JSON.stringify(e.description)})">Edit</button>
             <button class="btn-danger" onclick="deleteEntry(${e.id})">Delete</button>
           </div>
         </div>

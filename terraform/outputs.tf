@@ -13,7 +13,11 @@ output "site_url" {
   description = "CloudFront distribution URL for the S3 bucket"
 }
 
-output "cognito_user_pool_id" {
-  value       = module.cognito.user_pool_id
-  description = "The ID of the Cognito User Pool"
+output "cognito_user_pool_client_id" {
+  value       = module.cognito.user_pool_client_id
+  description = "The ID of the Cognito User Pool Client"
+}
+output "rds_endpoint" {
+  value       = module.rds.rds_endpoint
+  description = "RDS instance hostname"
 }

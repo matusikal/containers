@@ -47,7 +47,8 @@ module "ecs" {
   execution_role_arn = module.iam.ecs_execution_role_arn
   task_role_arn      = module.iam.ecs_task_role_arn
   ecr_image_url      = module.ecr.repository_url
-  rds_endpoint       = module.rds.rds_secret_arn
+  rds_endpoint       = module.rds.rds_endpoint
+  db_password        = module.rds.db_password
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_sg_id          = module.sg.ecs_sg_id
   target_group_arn   = module.alb.target_group_arn

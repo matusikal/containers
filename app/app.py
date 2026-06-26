@@ -10,22 +10,44 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# ── Secrets Manager ──────────────────────────────────────────────────────────
+# ── database init ──────────────────────────────────────────────────────────
 
-def get_db_credentials():
-    client = boto3.client('secretsmanager', region_name='eu-central-1')
-    secret = client.get_secret_value(SecretId='dailylog/rds/credentials')
-    return json.loads(secret['SecretString'])
+app = Flask(__name__)
+CORS(app)
+
+# ── Database init ─────────────────────────────────────────────────────────────
+
+def init_db():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS entries (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                entry_date DATE NOT NULL,
+                description TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"DB init error: {e}")
+
+init_db()
 
 # ── Database connection ───────────────────────────────────────────────────────
 
 def get_db_connection():
-    creds = get_db_credentials()
     return psycopg2.connect(
         host=os.environ.get('DB_HOST'),
         database=os.environ.get('DB_NAME', 'dailylog'),
-        user=creds['username'],
-        password=creds['password']
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASSWORD')
     )
 
 # ── Cognito token validation ──────────────────────────────────────────────────

@@ -58,9 +58,12 @@ resource "aws_ecs_task_definition" "dailylog_api_task" {
       ]
 
       environment = [
-        { name = "DB_HOST", value = var.rds_endpoint },
-        { name = "DB_NAME", value = "dailylog" }
+        { name = "DB_HOST",     value = var.rds_endpoint },
+        { name = "DB_NAME",     value = "dailylog" },
+        { name = "DB_USER",     value = "dailylog_admin" },
+        { name = "DB_PASSWORD", value = var.db_password }
       ]
+    
 
       logConfiguration = {
         logDriver = "awslogs"

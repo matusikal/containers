@@ -26,3 +26,7 @@ variable "target_group_arn" {
   description = "ARN of the target group for the ECS service"
   type        = string
 }
+variable "db_password" {
+  description = "Password for the RDS database"
+  type        = string
+}
