@@ -7,6 +7,10 @@ resource "aws_db_subnet_group" "default" {      #subnet group creation
   }
 }
 
+resource "random_id" "snapshot_suffix" {
+  byte_length = 4
+}
+
 resource "random_password" "db_password" {
   length           = 16
   special          = true
@@ -30,8 +34,8 @@ resource "aws_db_instance" "dailylog_db" {
   vpc_security_group_ids = [var.rds_security_group_id]
   backup_retention_period = 7
   deletion_protection     = false
-  skip_final_snapshot     = true
-  final_snapshot_identifier = "dailylog-final-snapshot"
+  skip_final_snapshot     = false
+  final_snapshot_identifier = "dailylog-final-snapshot-${random_id.snapshot_suffix.hex}"
 
   tags = {
     Name = "dailylog-db"
