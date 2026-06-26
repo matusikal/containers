@@ -63,7 +63,8 @@ module "cognito" {
   source = "./modules/cognito"
   callback_urls = [
     "http://localhost:3000",
-    "https://${module.s3.s3_distribution_domain_name}"
+    "https://${module.s3.s3_distribution_domain_name}",
+    "https://project3.aleksandermatusik.xyz"
   ]
 }
 
@@ -80,4 +81,7 @@ module "s3" {
   acm_certificate_arn  = "arn:aws:acm:us-east-1:064318812275:certificate/12a0b8b7-2efc-4c22-a251-9808b3ea6464"
   #domain_aliases        = ["project3.aleksanedermatusik.xyz"]
   environment           = "Dev"
+  cognito_domain       = module.cognito.cognito_domain
+  client_id            = module.cognito.user_pool_client_id
+  api_url              = module.api.invoke_url
 }

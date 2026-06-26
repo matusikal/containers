@@ -21,3 +21,8 @@ output "rds_endpoint" {
   value       = module.rds.rds_endpoint
   description = "RDS instance hostname"
 }
+
+output "cognito_user_pool_id" {
+  value       = module.cognito.user_pool_id
+  description = "The ID of the Cognito User Pool"
+}

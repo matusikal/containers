@@ -5,6 +5,8 @@ A private daily journal application built on AWS, demonstrating containerized wo
 > **Live demo:** [CONTACT ME FOR LIVE DEMO]  
 > **Portfolio:** [aleksandermatusik.xyz](https://aleksandermatusik.xyz)
 
+**Update 26.06.2026** I can boot up whole app using terraform, only adding dns manually to namecheap as a project3.aleksandermatusik.xyz
+
 ---
 
 ## Architecture
@@ -91,19 +93,19 @@ flowchart TD
 
 ---
 
-## Key Design Decisions
+## Key Design Decisions (incomplete)
 
 **Private subnets for compute and data**
 ECS tasks and RDS both run in private subnets with no public internet exposure. Only the ALB and NAT Gateway sit in public subnets. Traffic flows inward through API Gateway → ALB → ECS → RDS.
 
 **Secrets Manager over environment variables**
-Database credentials are never stored in code, task definitions, or environment variables. The Flask API fetches credentials from Secrets Manager at runtime using the ECS task IAM role.
+Database credentials are never stored in code, task definitions, or environment variables. The Flask API fetches credentials from Secrets Manager at runtime using the ECS task IAM role. (as for testing which component isn't working I did the opposite, will be changed)
 
 **API Gateway as the security boundary**
 Every request hits API Gateway first. The Cognito JWT authorizer validates tokens before any request reaches the ALB or ECS. Unauthenticated requests are rejected at the edge.
 
 **RDS snapshots for cost-optimised persistence**
-The stack is torn down when not in use to avoid ongoing RDS costs. A final snapshot is taken automatically on `terraform destroy` and restored on the next `terraform apply` — data persists across teardowns at near-zero cost.
+The stack is torn down when not in use to avoid ongoing RDS costs. A final snapshot is taken automatically on `terraform destroy` and restored on the next `terraform apply` — data persists across teardowns at near-zero cost. (need to implement a resource that gives random numbers after name so it can be easly destroyed and applied)
 
 **Path-filtered CI/CD pipelines**
 Two separate GitHub Actions workflows with path filters ensure infrastructure and application deployments are fully independent. Changing app code never triggers a Terraform run and vice versa.
@@ -112,15 +114,21 @@ Two separate GitHub Actions workflows with path filters ensure infrastructure an
 
 ## API Endpoints
 
-All endpoints except `/health` require a valid Cognito JWT token in the `Authorization: Bearer <token>` header.
-
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/health` | Health check — no auth required |
 | `GET` | `/entries` | Get all entries for the authenticated user |
 | `POST` | `/entries` | Create a new entry |
-| `PUT` | `/entries/:id` | Update an existing entry |
 | `DELETE` | `/entries/:id` | Delete an entry |
+
+---
+
+## Problems I encountered
+1. The api configuration and deployment is the first circle of hell they say, my calls to /health were giving the same response, alb url gave "only traffic from api" and my api made the same error. Flask was recieving requests but somehow i still couldn't check my app. Somehow my api gateway routes wasn't working, I decided to get rid of jwt token from apigatewway and let the flask handle everything.
+2. When testing deployment I had to manually get my outputs.tf and paste them into index.html. I wanted full automation so I implemented a technique where terraform takes variables from root output.tf and pastes it into now, better, faster - index.html.tpl. I also changed the wrong output I was getting from cognito/outputs.tf insted of user_pool_clients_id i was using user_pool_id.
+3. Whole lot of wrong IAM permissions added so ecs could not pull porperly from ecr changed permissions to * will change it later.
+4. Tired of creating fresh rds table after every terraform apply, especially if I had to make a bastion I could connect to the rds, tired of all security groups creation, etc. made a slight ajustment in app.py so it creates table for me. In the meantime I placed the call function incorrectly, had to change it after couple of failed deployments. 
+5. Had to hardcode credentials into the app.py because of some sort of barrier, will fix later
 
 ---
 

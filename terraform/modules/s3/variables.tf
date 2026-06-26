@@ -18,3 +18,14 @@ variable "environment" {
   description = "Deployment environment tag"
   default     = "Dev"
 }
+variable "cognito_domain" {
+  type        = string
+}
+
+variable "client_id" {
+  type        = string
+}
+
+variable "api_url" {
+  type        = string
+}

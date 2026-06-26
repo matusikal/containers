@@ -19,11 +19,28 @@ resource "aws_s3_bucket_public_access_block" "block_public" {
 resource "aws_s3_object" "upload_index" {
   bucket       = aws_s3_bucket.secure_bucket.id
   key          = "index.html"
-  source       = "../frontend/index.html" 
+  content       = templatefile("../frontend/index.html.tpl", {
+    cognito_domain = var.cognito_domain
+    client_id      = var.client_id
+    api_url        = var.api_url
+  })
   content_type = "text/html"
-   etag = filemd5("../frontend/index.html")
+  etag         = md5(templatefile("../frontend/index.html.tpl", {
+    cognito_domain = var.cognito_domain
+    client_id      = var.client_id
+    api_url        = var.api_url
+  }))
 
   depends_on = [aws_s3_bucket_public_access_block.block_public]
+}
+
+resource "terraform_data" "invalidate_cache" {
+  triggers_replace = [aws_s3_object.upload_index.etag]
+
+  provisioner "local-exec" {
+    interpreter = ["PowerShell", "-Command"]
+    command = "aws cloudfront create-invalidation --distribution-id ${aws_cloudfront_distribution.s3_distribution.id} --paths '/*'"
+  }
 }
 
 resource "aws_cloudfront_origin_access_control" "s3_oac" {

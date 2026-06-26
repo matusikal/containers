@@ -192,32 +192,32 @@
 <script>
   // ── Config ────────────────────────────────────────────────────────────────
   const CONFIG = {
-    cognitoDomain:  'https://dailylog-auth-matusikal.auth.eu-central-1.amazoncognito.com',
-    clientId:       '4nrpopk2c0v26ahk4uegd732er',
+    cognitoDomain:  'https://${cognito_domain}.auth.eu-central-1.amazoncognito.com',
+    clientId:       '${client_id}',
     redirectUri:    window.location.origin,
-    apiUrl:         'https://cqo9rkhqf8.execute-api.eu-central-1.amazonaws.com'
+    apiUrl:         '${api_url}'
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   function login() {
-    const url = `${CONFIG.cognitoDomain}/login?` +
-      `client_id=${CONFIG.clientId}` +
+    const url = `$${CONFIG.cognitoDomain}/login?` +
+      `client_id=$${CONFIG.clientId}` +
       `&response_type=code` +
       `&scope=email+openid+profile` +
-      `&redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`
+      `&redirect_uri=$${encodeURIComponent(CONFIG.redirectUri)}`
     window.location.href = url
   }
 
   function logout() {
     localStorage.removeItem('access_token')
-    const url = `${CONFIG.cognitoDomain}/logout?` +
-      `client_id=${CONFIG.clientId}` +
-      `&logout_uri=${encodeURIComponent(CONFIG.redirectUri)}`
+    const url = `$${CONFIG.cognitoDomain}/logout?` +
+      `client_id=$${CONFIG.clientId}` +
+      `&logout_uri=$${encodeURIComponent(CONFIG.redirectUri)}`
     window.location.href = url
   }
 
   async function exchangeCodeForToken(code) {
-    const resp = await fetch(`${CONFIG.cognitoDomain}/oauth2/token`, {
+    const resp = await fetch(`$${CONFIG.cognitoDomain}/oauth2/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -243,11 +243,11 @@
   // ── API calls ─────────────────────────────────────────────────────────────
   async function apiFetch(path, options = {}) {
     const token = getToken()
-    const resp = await fetch(`${CONFIG.apiUrl}${path}`, {
+    const resp = await fetch(`$${CONFIG.apiUrl}$${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer $${token}`,
         ...options.headers
       }
     })
@@ -291,7 +291,7 @@
 
   async function deleteEntry(id) {
     if (!confirm('Delete this entry?')) return
-    const resp = await apiFetch(`/entries/${id}`, { method: 'DELETE' })
+    const resp = await apiFetch(`/entries/$${id}`, { method: 'DELETE' })
     if (resp && resp.ok) {
       showToast('Entry deleted')
       loadEntries()
@@ -311,12 +311,12 @@
     list.innerHTML = entries.map(e => `
       <div class="card">
         <div class="card-header">
-          <span class="entry-date">${formatDate(e.date)}</span>
+          <span class="entry-date">$${formatDate(e.date)}</span>
           <div class="actions">
-            <button class="btn-danger" onclick="deleteEntry(${e.id})">Delete</button>
+            <button class="btn-danger" onclick="deleteEntry($${e.id})">Delete</button>
           </div>
         </div>
-        <p class="entry-description">${escapeHtml(e.description)}</p>
+        <p class="entry-description">$${escapeHtml(e.description)}</p>
       </div>
     `).join('')
   }

@@ -37,8 +37,7 @@ def init_db():
         print("Database initialized successfully")
     except Exception as e:
         print(f"DB init error: {e}")
-
-init_db()
+        raise
 
 # ── Database connection ───────────────────────────────────────────────────────
 
@@ -195,7 +194,7 @@ def delete_entry(user_id, entry_id):
 
 
 # ── Run ───────────────────────────────────────────────────────────────────────
-
+init_db()
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 

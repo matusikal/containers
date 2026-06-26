@@ -30,7 +30,7 @@ resource "aws_db_instance" "dailylog_db" {
   vpc_security_group_ids = [var.rds_security_group_id]
   backup_retention_period = 7
   deletion_protection     = false
-  skip_final_snapshot     = false
+  skip_final_snapshot     = true
   final_snapshot_identifier = "dailylog-final-snapshot"
 
   tags = {

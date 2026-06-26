@@ -1,6 +1,7 @@
 resource "aws_cognito_user_pool" "dailylog_pool" {
   name                = "dailylog-user-pool"
   username_attributes = ["email"]
+  auto_verified_attributes = ["email"]
   account_recovery_setting {
     recovery_mechanism {
       name     = "verified_email"
